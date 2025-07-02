@@ -58,7 +58,7 @@ def translate_tool(input_text: str) -> str:
         HumanMessage(content=text)
     ]
     logger.info(f"\nSending translation request to OpenAI LLM: {input_text}")
-    response = chat_llm(messages)
+    response = chat_llm.invoke(messages)
     return response.content.strip()
 
 
@@ -78,14 +78,13 @@ def create_react_agent(llm: Any, tools: list) -> Any:
         memory_key="chat_history",
         return_messages=True
     )
-    # Optionally pre-seed with a system note:
-    memory.save_context({}, {"role": "system", "content": "You are a helpful translator."})
+    memory.save_context({"input": "Hello"}, {"output": "Hi there!"})
     logger.debug("Current memory buffer: %s", memory.buffer_as_str)
 
     return initialize_agent(
         tools,
         llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
         memory=memory,
         verbose=True,
         handle_parsing_errors=True

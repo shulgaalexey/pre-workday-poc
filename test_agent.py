@@ -75,6 +75,22 @@ class TestAgentCreation:
             create_langchain_agent()
 
 
+class TestMemoryFunctionality:
+    """Test cases for agent memory functionality."""
+
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "test_key"})
+    def test_memory_flow(self, mocker):
+        """Test that the agent's memory feature is working correctly."""
+        # Mock ChatOpenAI so we don't hit OpenAI
+        mocker.patch("agent.ChatOpenAI", autospec=True)
+
+        agent = create_langchain_agent()
+
+        # Save some context manually
+        agent.memory.save_context({"input": "Hello"}, {"output": "Hi there!"})
+        assert "Hello" in agent.memory.buffer_as_str
+
+
 if __name__ == "__main__":
     # Run tests if called directly
     pytest.main([__file__, "-v"])
