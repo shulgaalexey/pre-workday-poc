@@ -11,6 +11,7 @@ from typing import Any, Dict
 
 from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, AgentType, Tool, initialize_agent
+from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
@@ -73,10 +74,19 @@ def create_react_agent(llm: Any, tools: list) -> Any:
     Returns:
         An initialized agent instance
     """
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        return_messages=True
+    )
+    # Optionally pre-seed with a system note:
+    memory.save_context({}, {"role": "system", "content": "You are a helpful translator."})
+    logger.debug("Current memory buffer: %s", memory.buffer_as_str)
+
     return initialize_agent(
         tools,
         llm,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        memory=memory,
         verbose=True,
         handle_parsing_errors=True
     )
