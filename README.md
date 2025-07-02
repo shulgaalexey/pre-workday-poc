@@ -22,23 +22,27 @@ Built for Windows + VS Code environment following clarity-first development prin
 ### Installation
 
 1. **Clone the repository and navigate to the project folder:**
+
    ```powershell
    cd c:\src\pre-workday-poc
    ```
 
 2. **Create and activate a virtual environment:**
+
    ```powershell
    python -m venv .venv
    .\.venv\Scripts\Activate.ps1
    ```
 
 3. **Install dependencies:**
+
    ```powershell
    pip install -r requirements.txt
    ```
 
 4. **Set up environment variables:**
    Create a `.env` file in the project root:
+
    ```env
    OPENAI_API_KEY=your_openai_api_key_here
    ```
@@ -47,29 +51,29 @@ Built for Windows + VS Code environment following clarity-first development prin
 
 ### Running the Basic Agent
 
-```powershell
-python .\agent.py
-```
+   ```powershell
+   python .\agent.py
+   ```
 
 ### Running Examples
 
-```powershell
-python .\examples\agent_demo.py
-```
+   ```powershell
+   python .\examples\agent_demo.py
+   ```
 
 ### Running Tests
 
-```powershell
-# Run all tests
-python -m pytest test_agent.py -v
+   ```powershell
+   # Run all tests
+   python -m pytest test_agent.py -v
 
-# Run with coverage
-python -m pytest test_agent.py --cov=agent --cov-report=html
-```
+   # Run with coverage
+   python -m pytest test_agent.py --cov=agent --cov-report=html
+   ```
 
 ## Project Structure
 
-```
+```text
 ├── agent.py              # Main LangChain agent implementation
 ├── test_agent.py         # Unit tests for agent functionality
 ├── examples/
@@ -114,12 +118,12 @@ Following the repository's coding principles:
 
 ### Logging
 
-The application uses structured logging. To increase verbosity:
+To increase verbosity:
 
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
+   ```python
+   import logging
+   logging.basicConfig(level=logging.DEBUG)
+   ```
 
 ## Contributing
 
