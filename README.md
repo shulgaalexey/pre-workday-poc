@@ -7,6 +7,7 @@ Built for Windows + VS Code environment following clarity-first development prin
 
 - Modern LangChain agent implementation using ReAct pattern
 - OpenAI LLM integration with proper error handling
+- **Configurable memory options**: Choose between in-memory or persistent SQLite storage
 - Comprehensive logging for debugging and monitoring
 - Unit tests with pytest for reliability
 - Example scripts for experimentation
@@ -47,6 +48,29 @@ Built for Windows + VS Code environment following clarity-first development prin
    OPENAI_API_KEY=your_openai_api_key_here
    ```
 
+5. **Configure memory settings (optional):**
+   The agent uses configurable memory via `.config.yaml`. You can choose between:
+   - `"in-memory"` (default): Memory resets between sessions
+   - `"persistent-sqlite"`: Conversations persist in SQLite database
+
+   To use persistent memory, edit `.config.yaml`:
+
+   ```yaml
+   # Memory configuration
+   # Options: "in-memory" or "persistent-sqlite"
+   memory: "persistent-sqlite"
+   ```
+
+6. **Install SQLite (for persistent memory option):**
+
+   ```powershell
+   # Install SQLite via Chocolatey (if you have Chocolatey)
+   choco install sqlite
+
+   # OR download from https://sqlite.org/download.html
+   # Add SQLite to your PATH environment variable
+   ```
+
 ## Usage
 
 ### Running the Basic Agent
@@ -71,15 +95,32 @@ Built for Windows + VS Code environment following clarity-first development prin
    python -m pytest test_agent.py --cov=agent --cov-report=html
    ```
 
+### Querying Persistent Memory (SQLite)
+
+If you're using persistent memory, you can query the conversation history directly:
+
+   ```powershell
+   # View recent messages
+   sqlite3 .\chat_history.db "SELECT * FROM messages LIMIT 5;"
+
+   # View all messages with timestamps
+   sqlite3 .\chat_history.db "SELECT * FROM messages ORDER BY id DESC;"
+
+   # Count total messages
+   sqlite3 .\chat_history.db "SELECT COUNT(*) FROM messages;"
+   ```
+
 ## Project Structure
 
 ```text
 ├── agent.py              # Main LangChain agent implementation
 ├── test_agent.py         # Unit tests for agent functionality
+├── .config.yaml          # Configuration file for memory settings
 ├── examples/
 │   └── agent_demo.py     # Example usage demonstrations
 ├── requirements.txt      # Python dependencies
 ├── .env                  # Environment variables (create this)
+├── chat_history.db       # SQLite database (created when using persistent memory)
 └── README.md            # This file
 ```
 

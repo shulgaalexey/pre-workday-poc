@@ -9,10 +9,12 @@ import logging
 import os
 from typing import Any, Dict
 
+import yaml
 from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, AgentType, Tool, initialize_agent
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage, SystemMessage
+from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_openai import ChatOpenAI
 
 # Alias for tests and to match expected OpenAI reference in tests
@@ -21,6 +23,31 @@ OpenAI = ChatOpenAI
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def load_config() -> Dict[str, Any]:
+    """
+    Load configuration from .config.yaml file.
+
+    Returns:
+        Dictionary containing configuration settings
+
+    Raises:
+        FileNotFoundError: If config file doesn't exist
+        yaml.YAMLError: If config file is malformed
+    """
+    config_path = ".config.yaml"
+    try:
+        with open(config_path, 'r', encoding='utf-8') as config_file:
+            config = yaml.safe_load(config_file)
+            logger.debug(f"Loaded config: {config}")
+            return config or {}
+    except FileNotFoundError:
+        logger.warning(f"Config file {config_path} not found, using defaults")
+        return {"memory": "in-memory"}
+    except yaml.YAMLError as e:
+        logger.error(f"Error parsing config file {config_path}: {e}")
+        raise
 
 
 def echo_tool(text: str) -> str:
@@ -74,11 +101,31 @@ def create_react_agent(llm: Any, tools: list) -> Any:
     Returns:
         An initialized agent instance
     """
-    memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True
-    )
-    memory.save_context({"input": "You are a helpful translator"}, {"output": "Hi there! Got it."})
+    # Load configuration to determine memory type
+    config = load_config()
+    memory_type = config.get("memory", "in-memory")
+
+    if memory_type == "persistent-sqlite":
+        # ----- New persistent memory -----
+        message_history = SQLChatMessageHistory(
+            session_id="default_user",
+            connection_string="sqlite:///chat_history.db"   # creates file in repo root
+        )
+        memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            chat_memory=message_history,
+            return_messages=True
+        )
+        logger.info("Using persistent SQLite memory")
+    else:
+        # Default in-memory configuration
+        memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True
+        )
+        logger.info("Using in-memory memory")
+
+    # memory.save_context({"input": "You are a helpful translator"}, {"output": "Hi there! Got it."})
     logger.debug("Current memory buffer: %s", memory.buffer_as_str)
 
     return initialize_agent(

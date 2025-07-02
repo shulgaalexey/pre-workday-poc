@@ -1,0 +1,7 @@
+# Repository Configuration
+# Configuration settings for the LangChain Agent PoC
+
+# Memory configuration
+# Options: "in-memory" or "persistent-sqlite"
+# memory: "in-memory"
+memory: "persistent-sqlite"
