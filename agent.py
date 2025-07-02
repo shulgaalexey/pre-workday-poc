@@ -78,7 +78,7 @@ def create_react_agent(llm: Any, tools: list) -> Any:
         memory_key="chat_history",
         return_messages=True
     )
-    memory.save_context({"input": "Hello"}, {"output": "Hi there!"})
+    memory.save_context({"input": "You are a helpful translator"}, {"output": "Hi there! Got it."})
     logger.debug("Current memory buffer: %s", memory.buffer_as_str)
 
     return initialize_agent(
