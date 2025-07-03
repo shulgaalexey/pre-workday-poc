@@ -6,3 +6,11 @@ pytest>=7.0.0
 pytest-mock>=3.0.0
 sqlalchemy>=2.0.41
 pyyaml>=6.0.0
+
+# Added for better BLEU evaluation (optional)
+sacrebleu>=2.3.1
+nltk>=3.8
+datasets>=2.14.0
+
+# Additional testing dependencies
+pytest-cov>=4.1.0

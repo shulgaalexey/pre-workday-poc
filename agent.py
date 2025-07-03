@@ -5,6 +5,7 @@ A simple proof-of-concept agent demonstrating LangChain usage with OpenAI LLM.
 Built for Windows + VS Code environment with clarity-first approach.
 """
 
+import json
 import logging
 import os
 from typing import Any, Dict
@@ -16,6 +17,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 
 # Alias for tests and to match expected OpenAI reference in tests
 OpenAI = ChatOpenAI
@@ -64,6 +66,17 @@ def echo_tool(text: str) -> str:
     return f"Echo: {text}"
 
 
+# Load glossary once
+with open("glossary.json", "r", encoding="utf-8") as f:
+    GLOSS = json.load(f)
+
+
+def _apply_glossary(lang: str, text: str) -> list[dict]:
+    """Return OpenAI function-calling 'glossary' argument."""
+    gloss_map = {src: tgt.get(lang[:2].lower()) for src, tgt in GLOSS.items()}
+    return [{"source_term": k, "target_term": v} for k, v in gloss_map.items() if v]
+
+
 def translate_tool(input_text: str) -> str:
     """
     Translate text to a specified language.
@@ -78,15 +91,34 @@ def translate_tool(input_text: str) -> str:
     if len(parts) != 2:
         return f"Error: Invalid format. Use '<language> | <text>'. Got: {input_text}"
     language, text = parts[0].strip(), parts[1].strip()
-    logger.debug(f"Translating to %s: %s", language, text)
-    chat_llm = ChatOpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"), temperature=0.3, model_name="gpt-4")
+    glossary = _apply_glossary(language, text)
+
+    logger.info(f"Translating to %s: %s", language, text)
+
+    # Use LangChain ChatOpenAI for proper integration
+    chat_llm = ChatOpenAI(
+        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        temperature=0.3,
+        model_name="gpt-4o-mini"
+    )
+
+    # Create system message with glossary context
+    glossary_context = ""
+    if glossary:
+        glossary_terms = ", ".join([f"{g['source_term']} -> {g['target_term']}" for g in glossary])
+        glossary_context = f"\nUse these glossary terms exactly: {glossary_terms}"
+
     messages = [
-        SystemMessage(content=f"Translate the following text to {language}. Return only the translated text."),
+        SystemMessage(content=f"Translate the following text to {language}. Return only the translated text.{glossary_context}"),
         HumanMessage(content=text)
     ]
-    logger.info(f"\nSending translation request to OpenAI LLM: {input_text}")
-    response = chat_llm.invoke(messages)
-    return response.content.strip()
+
+    try:
+        response = chat_llm.invoke(messages)
+        return response.content.strip()
+    except Exception as e:
+        logger.error(f"Translation error: {e}")
+        return f"Translation failed: {str(e)}"
 
 
 # New function to initialize the ReAct agent for testability and separation of concerns
