@@ -1,178 +1,85 @@
 # LangChain Agent PoC
 
-A simple proof-of-concept demonstrating LangChain agent functionality with OpenAI LLM integration.
-Built for Windows + VS Code environment following clarity-first development principles.
+A proof-of-concept LangChain agent with OpenAI integration, built for Windows + VS Code with clarity-first approach.
+
+## Quick Start
+
+```powershell
+# Setup
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+
+# Create .env file with your OpenAI API key
+echo "OPENAI_API_KEY=your_key_here" > .env
+
+# Run
+python agent.py
+python examples/agent_demo.py
+pytest -v
+```
 
 ## Features
 
-- Modern LangChain agent implementation using ReAct pattern
-- OpenAI LLM integration with proper error handling
-- **Configurable memory options**: Choose between in-memory or persistent SQLite storage
-- Comprehensive logging for debugging and monitoring
-- Unit tests with pytest for reliability
-- Example scripts for experimentation
-
-## Setup
-
-### Prerequisites
-
-- Python 3.8 or higher
-- OpenAI API key
-- Virtual environment (recommended)
-
-### Installation
-
-1. **Clone the repository and navigate to the project folder:**
-
-   ```powershell
-   cd c:\src\pre-workday-poc
-   ```
-
-2. **Create and activate a virtual environment:**
-
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
-
-3. **Install dependencies:**
-
-   ```powershell
-   pip install -r requirements.txt
-   ```
-
-4. **Set up environment variables:**
-   Create a `.env` file in the project root:
-
-   ```env
-   OPENAI_API_KEY=your_openai_api_key_here
-   ```
-
-5. **Configure memory settings (optional):**
-   The agent uses configurable memory via `.config.yaml`. You can choose between:
-   - `"in-memory"` (default): Memory resets between sessions
-   - `"persistent-sqlite"`: Conversations persist in SQLite database
-
-   To use persistent memory, edit `.config.yaml`:
-
-   ```yaml
-   # Memory configuration
-   # Options: "in-memory" or "persistent-sqlite"
-   memory: "persistent-sqlite"
-   ```
-
-6. **Install SQLite (for persistent memory option):**
-
-   ```powershell
-   # Install SQLite via Chocolatey (if you have Chocolatey)
-   choco install sqlite
-
-   # OR download from https://sqlite.org/download.html
-   # Add SQLite to your PATH environment variable
-   ```
+- **LangChain agent** with ReAct pattern and translation tools
+- **Memory options**: In-memory (default) or persistent SQLite
+- **Translation evaluation** with BLEU scoring and CI/CD integration
+- **Interactive chat** and comprehensive testing
 
 ## Usage
 
-### Running the Basic Agent
+```powershell
+# Basic agent
+python agent.py
 
-   ```powershell
-   python .\agent.py
-   ```
+# Examples and demos
+python examples/agent_demo.py
 
-### Running Examples
+# Translation evaluation
+python evaluate_translation.py
 
-   ```powershell
-   python .\examples\agent_demo.py
-   ```
+# Tests (with markers)
+pytest -v                           # All tests
+pytest -m translation_eval -v       # Translation tests only
+pytest -m "not translation_eval" -v # Skip translation tests
+```
 
-### Running Tests
+## Configuration
 
-   ```powershell
-   # Run all tests
-   python -m pytest test_agent.py -v
+**Memory** - Edit `.config.yaml`:
 
-   # Run with coverage
-   python -m pytest test_agent.py --cov=agent --cov-report=html
-   ```
+```yaml
+memory: "in-memory"          # or "persistent-sqlite"
+```
 
-### Querying Persistent Memory (SQLite)
+**Translation** - BLEU threshold in `evaluate_translation.py`:
 
-If you're using persistent memory, you can query the conversation history directly:
-
-   ```powershell
-   # View recent messages
-   sqlite3 .\chat_history.db "SELECT * FROM messages LIMIT 5;"
-
-   # View all messages with timestamps
-   sqlite3 .\chat_history.db "SELECT * FROM messages ORDER BY id DESC;"
-
-   # Count total messages
-   sqlite3 .\chat_history.db "SELECT COUNT(*) FROM messages;"
-   ```
+```python
+BLEU_THRESHOLD = 50.0        # CI/CD fails below this
+```
 
 ## Project Structure
 
-```text
-├── agent.py              # Main LangChain agent implementation
-├── test_agent.py         # Unit tests for agent functionality
-├── .config.yaml          # Configuration file for memory settings
-├── examples/
-│   └── agent_demo.py     # Example usage demonstrations
-├── requirements.txt      # Python dependencies
-├── .env                  # Environment variables (create this)
-├── chat_history.db       # SQLite database (created when using persistent memory)
-└── README.md            # This file
+```bash
+├── agent.py                 # Main LangChain agent
+├── evaluate_translation.py  # Translation evaluation with BLEU scoring
+├── chat_cli.py             # Interactive chat interface
+├── test_*.py               # Unit tests with pytest markers
+├── examples/agent_demo.py  # Usage examples
+├── .config.yaml           # Memory configuration
+├── requirements.txt        # Dependencies
+└── .env                   # OpenAI API key (create this)
 ```
 
-## Architecture
+## Translation Evaluation
 
-The project follows a simple, modular architecture:
+The system includes automated translation quality assessment:
 
-- **`agent.py`**: Core agent implementation with proper error handling and logging
-- **`echo_tool`**: Simple demonstration tool that echoes input text
-- **`create_langchain_agent()`**: Factory function for agent creation and configuration
-- **Tests**: Comprehensive unit tests covering functionality and edge cases
+- **BLEU scoring** with 50% threshold
+- **CI/CD integration** that fails builds on poor translations
+- **Pytest markers** for selective test running
+- **GitHub Actions** workflow for automated evaluation
 
-## Development Guidelines
+See `TRANSLATION_EVAL_README.md` for detailed translation evaluation documentation.
 
-Following the repository's coding principles:
-
-1. **Clarity over cleverness** - straightforward, readable code
-2. **Comprehensive logging** - INFO level by default, DEBUG for detailed diagnostics
-3. **Type hints and docstrings** - clear documentation for all functions
-4. **Unit testing** - pytest with ≥80% coverage target
-5. **PoC mindset** - rapid experimentation with small, focused scripts
-
-## Troubleshooting
-
-### Common Issues
-
-1. **`ModuleNotFoundError: No module named 'langchain_community'`**
-   - Solution: Install missing dependencies with `pip install langchain-openai langchain-community`
-
-2. **`ValueError: OPENAI_API_KEY not found`**
-   - Solution: Ensure your `.env` file contains a valid OpenAI API key
-
-3. **Agent parsing errors**
-   - This is expected behavior with the current ReAct prompt template
-   - The agent will handle parsing errors gracefully and continue execution
-
-### Logging
-
-To increase verbosity:
-
-   ```python
-   import logging
-   logging.basicConfig(level=logging.DEBUG)
-   ```
-
-## Contributing
-
-1. Follow the existing code style and patterns
-2. Add unit tests for new functionality
-3. Update documentation for significant changes
-4. Use descriptive commit messages
-
-## License
-
-This is a proof-of-concept project for internal use.
+Built following PoC guidelines with clarity over cleverness.
