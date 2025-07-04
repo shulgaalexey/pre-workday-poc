@@ -7,6 +7,7 @@ Built for Windows + VS Code environment with clarity-first approach.
 
 import json
 import logging
+import os
 import pathlib
 import sys
 from typing import Any, Dict, List
@@ -132,6 +133,25 @@ def main():
     Exits with code 1 if BLEU score is below threshold (for CI/CD).
     """
     try:
+        # Debug environment variables
+        logger.info("Starting translation evaluation")
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if openai_key:
+            logger.info(f"OPENAI_API_KEY found (length: {len(openai_key)})")
+        else:
+            logger.error("OPENAI_API_KEY not found in environment variables")
+            logger.error("Available environment variables:")
+            for key in sorted(os.environ.keys()):
+                if 'API' in key or 'OPENAI' in key:
+                    logger.error(f"  {key}: {'SET' if os.environ[key] else 'EMPTY'}")
+
+        # Check if OPENAI_API_KEY is available
+        if not openai_key:
+            logger.error("OPENAI_API_KEY not found in environment variables")
+            logger.error("Ensure OPENAI_API_KEY is set as a GitHub secret or in your .env file")
+            print("❌ OPENAI_API_KEY not found in environment variables")
+            sys.exit(1)
+
         # Run evaluation
         results = evaluate_translations()
         print("Evaluation Results:")

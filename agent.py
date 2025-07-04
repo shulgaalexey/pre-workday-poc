@@ -66,9 +66,21 @@ def echo_tool(text: str) -> str:
     return f"Echo: {text}"
 
 
-# Load glossary once
-with open("glossary.json", "r", encoding="utf-8") as f:
-    GLOSS = json.load(f)
+# Load glossary once with proper encoding
+try:
+    with open("glossary.json", "r", encoding="utf-8") as f:
+        GLOSS = json.load(f)
+except UnicodeDecodeError as e:
+    logger.error(f"Unicode error loading glossary: {e}")
+    # Fallback to basic glossary
+    GLOSS = {
+        "cloud": {"es": "nube", "de": "Cloud"},
+        "payroll": {"es": "nomina", "de": "Lohnabrechnung"},  # Simplified without accent
+        "Workday": {"es": "Workday", "de": "Workday"}
+    }
+except Exception as e:
+    logger.error(f"Error loading glossary: {e}")
+    GLOSS = {}
 
 
 def _apply_glossary(lang: str, text: str) -> list[dict]:
@@ -95,9 +107,15 @@ def translate_tool(input_text: str) -> str:
 
     logger.info(f"Translating to %s: %s", language, text)
 
+    # Get API key - should already be available in environment
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    if not openai_api_key:
+        logger.error("OPENAI_API_KEY not found in environment variables")
+        return "Translation failed: OPENAI_API_KEY not found in environment variables"
+
     # Use LangChain ChatOpenAI for proper integration
     chat_llm = ChatOpenAI(
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
+        openai_api_key=openai_api_key,
         temperature=0.3,
         model_name="gpt-4o-mini"
     )
@@ -105,8 +123,12 @@ def translate_tool(input_text: str) -> str:
     # Create system message with glossary context
     glossary_context = ""
     if glossary:
-        glossary_terms = ", ".join([f"{g['source_term']} -> {g['target_term']}" for g in glossary])
-        glossary_context = f"\nUse these glossary terms exactly: {glossary_terms}"
+        try:
+            glossary_terms = ", ".join([f"{g['source_term']} -> {g['target_term']}" for g in glossary])
+            glossary_context = f"\nUse these glossary terms exactly: {glossary_terms}"
+        except UnicodeEncodeError as e:
+            logger.warning(f"Unicode encoding error in glossary: {e}")
+            glossary_context = "\nUse standard translation practices."
 
     messages = [
         SystemMessage(content=f"Translate the following text to {language}. Return only the translated text.{glossary_context}"),
@@ -115,7 +137,9 @@ def translate_tool(input_text: str) -> str:
 
     try:
         response = chat_llm.invoke(messages)
-        return response.content.strip()
+        result = response.content.strip()
+        logger.info(f"Translation result: {result}")
+        return result
     except Exception as e:
         logger.error(f"Translation error: {e}")
         return f"Translation failed: {str(e)}"
@@ -180,11 +204,15 @@ def create_langchain_agent() -> AgentExecutor:
     Raises:
         ValueError: If OPENAI_API_KEY is not found in environment
     """
-    # Load API key from .env
+    # Load API key from .env file (for local development)
+    # In CI/CD environments, the key should already be in environment variables
     load_dotenv()
     openai_api_key = os.getenv("OPENAI_API_KEY")
 
     if not openai_api_key:
+        logger.error("OPENAI_API_KEY not found in environment variables")
+        logger.error("For local development, ensure you have a .env file with OPENAI_API_KEY=your_key")
+        logger.error("For CI/CD, ensure OPENAI_API_KEY is set as a secret")
         raise ValueError("OPENAI_API_KEY not found in environment variables")
 
     logger.info("Initializing LangChain agent with OpenAI LLM")

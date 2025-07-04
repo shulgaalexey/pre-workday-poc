@@ -24,6 +24,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Debug environment
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        echo "Checking environment variables..."
+        if ($env:OPENAI_API_KEY) {
+          echo "OPENAI_API_KEY is set (length: $($env:OPENAI_API_KEY.Length))"
+        } else {
+          echo "OPENAI_API_KEY is NOT set"
+        }
+
     - name: Run translation evaluation
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
