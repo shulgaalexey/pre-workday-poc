@@ -16,9 +16,6 @@ from evaluate_translation import calculate_bleu_score, evaluate_translations
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Pytest marker for translation evaluation tests
-pytestmark = pytest.mark.translation_eval
-
 
 class TestTranslationEvaluation:
     """Test cases for translation evaluation functionality."""
@@ -100,6 +97,21 @@ class TestTranslationEvaluation:
         with pytest.raises(AssertionError, match="BLEU score .* is below threshold"):
             assert bleu_score >= 50, f"BLEU score {bleu_score} is below threshold of 50"
 
+    @pytest.mark.translation_eval
+    def test_evaluate_translations_exception_handling(self, mocker):
+        """Test evaluation function handles exceptions properly."""
+        # Mock agent creation to raise an exception
+        mock_agent = mocker.patch('evaluate_translation.create_langchain_agent')
+        mock_agent.side_effect = Exception("Test exception")
+
+        # Should raise the exception
+        with pytest.raises(Exception, match="Test exception"):
+            evaluate_translations()
+
+
+class TestBLEUScoreCalculation:
+    """Test cases for BLEU score calculation utility functions."""
+
     def test_calculate_bleu_score_empty_results(self):
         """Test BLEU calculation with empty results."""
         empty_results = []
@@ -122,14 +134,3 @@ class TestTranslationEvaluation:
         invalid_results = None
         bleu_score = calculate_bleu_score(invalid_results)
         assert bleu_score == 0.0
-
-    @pytest.mark.translation_eval
-    def test_evaluate_translations_exception_handling(self, mocker):
-        """Test evaluation function handles exceptions properly."""
-        # Mock agent creation to raise an exception
-        mock_agent = mocker.patch('evaluate_translation.create_langchain_agent')
-        mock_agent.side_effect = Exception("Test exception")
-
-        # Should raise the exception
-        with pytest.raises(Exception, match="Test exception"):
-            evaluate_translations()

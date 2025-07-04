@@ -35,6 +35,12 @@ jobs:
           echo "OPENAI_API_KEY is NOT set"
         }
 
+    - name: Run unit tests
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        pytest . -v --tb=short --strict-markers -m "not translation_eval"
+
     - name: Run translation evaluation
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -55,3 +61,6 @@ jobs:
         path: |
           *.log
           evaluation_results.json
+          .pytest_cache/
+          test-results.xml
+          htmlcov/
