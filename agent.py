@@ -165,7 +165,7 @@ def create_react_agent(llm: Any, tools: list) -> Any:
         # ----- New persistent memory -----
         message_history = SQLChatMessageHistory(
             session_id="default_user",
-            connection_string="sqlite:///chat_history.db"   # creates file in repo root
+            connection="sqlite:///chat_history.db"   # creates file in repo root
         )
         memory = ConversationBufferMemory(
             memory_key="chat_history",

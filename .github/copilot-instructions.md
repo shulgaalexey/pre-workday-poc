@@ -16,6 +16,10 @@ This repository hosts proof-of-concept (PoC) agents built with LangChain / AutoG
 8. **Prompt engineering** – keep LLM prompts explicit and concise; comment any complex reasoning steps.
 9. **Copilot usage** – for new files, Copilot should scaffold docstrings, logging setup, and a basic pytest skeleton automatically.
 
+
+# IMPORTANT
+The app should run on both a local Windows machine and in the GitHub Actions environment.
+
 # IMPORTANT
 When you changed the code, you MUST run all the available tests using the insturction like below:
 ```powershell
