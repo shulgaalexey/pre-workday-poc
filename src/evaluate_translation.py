@@ -16,7 +16,11 @@ from typing import Any, Dict, List
 from dotenv import load_dotenv
 from langchain.evaluation import load_evaluator
 
-from agent import create_langchain_agent
+try:
+    from .agent import create_langchain_agent
+except ImportError:
+    # Fallback for direct script execution
+    from agent import create_langchain_agent
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

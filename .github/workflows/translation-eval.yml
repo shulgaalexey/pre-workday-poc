@@ -39,19 +39,19 @@ jobs:
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
-        pytest . -v --tb=short --strict-markers -m "not translation_eval"
+        pytest tests -v --tb=short --strict-markers -m "not translation_eval"
 
     - name: Run translation evaluation
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
-        python evaluate_translation.py
+        python src/evaluate_translation.py
 
     - name: Run pytest with translation eval marker
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
-        pytest -m translation_eval -v --tb=short
+        pytest tests -m translation_eval -v --tb=short
 
     - name: Upload evaluation results
       if: always()

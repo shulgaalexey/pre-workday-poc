@@ -27,6 +27,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
+def get_project_root():
+    """Get the project root directory (parent of src folder)."""
+    import pathlib
+    return pathlib.Path(__file__).parent.parent
+
+
 def load_config() -> Dict[str, Any]:
     """
     Load configuration from .config.yaml file.
@@ -38,7 +44,7 @@ def load_config() -> Dict[str, Any]:
         FileNotFoundError: If config file doesn't exist
         yaml.YAMLError: If config file is malformed
     """
-    config_path = ".config.yaml"
+    config_path = get_project_root() / ".config.yaml"
     try:
         with open(config_path, 'r', encoding='utf-8') as config_file:
             config = yaml.safe_load(config_file)
@@ -68,7 +74,8 @@ def echo_tool(text: str) -> str:
 
 # Load glossary once with proper encoding
 try:
-    with open("glossary.json", "r", encoding="utf-8") as f:
+    glossary_path = get_project_root() / "data" / "glossary.json"
+    with open(glossary_path, "r", encoding="utf-8") as f:
         GLOSS = json.load(f)
 except UnicodeDecodeError as e:
     logger.error(f"Unicode error loading glossary: {e}")

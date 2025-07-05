@@ -26,6 +26,8 @@ When you changed the code, you MUST run all the available tests using the instur
 cd c:\src\pre-workday-poc && pytest . -v --tb=short
 ```
 
+## If you come up with more good ideas
+If you come up with more good ideas to improve the code or structure of the repo, please document them here in the .github/copilot-instructions.md file.
 
 ## When in doubt…
 Ask for clarification in Copilot Chat or reference these instructions.

@@ -9,8 +9,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from agent import create_langchain_agent
-from evaluate_translation import calculate_bleu_score, evaluate_translations
+from src.agent import create_langchain_agent
+from src.evaluate_translation import (calculate_bleu_score,
+                                      evaluate_translations)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -28,7 +29,7 @@ class TestTranslationEvaluation:
         Fails build if BLEU < 50.
         """
         # Mock the agent to return predictable translations
-        mock_agent = mocker.patch('evaluate_translation.create_langchain_agent')
+        mock_agent = mocker.patch('src.evaluate_translation.create_langchain_agent')
         mock_agent_instance = MagicMock()
         mock_agent.return_value = mock_agent_instance
 
@@ -39,7 +40,7 @@ class TestTranslationEvaluation:
         ]
 
         # Mock load_evaluator to return successful results
-        mock_evaluator = mocker.patch('evaluate_translation.load_evaluator')
+        mock_evaluator = mocker.patch('src.evaluate_translation.load_evaluator')
         mock_evaluator_instance = MagicMock()
         mock_evaluator.return_value = mock_evaluator_instance
         mock_evaluator_instance.evaluate_strings.side_effect = [
@@ -66,7 +67,7 @@ class TestTranslationEvaluation:
         This test verifies the failure mechanism works.
         """
         # Mock the agent to return poor translations
-        mock_agent = mocker.patch('evaluate_translation.create_langchain_agent')
+        mock_agent = mocker.patch('src.evaluate_translation.create_langchain_agent')
         mock_agent_instance = MagicMock()
         mock_agent.return_value = mock_agent_instance
 
@@ -77,7 +78,7 @@ class TestTranslationEvaluation:
         ]
 
         # Mock load_evaluator to return poor results
-        mock_evaluator = mocker.patch('evaluate_translation.load_evaluator')
+        mock_evaluator = mocker.patch('src.evaluate_translation.load_evaluator')
         mock_evaluator_instance = MagicMock()
         mock_evaluator.return_value = mock_evaluator_instance
         mock_evaluator_instance.evaluate_strings.side_effect = [
@@ -101,7 +102,7 @@ class TestTranslationEvaluation:
     def test_evaluate_translations_exception_handling(self, mocker):
         """Test evaluation function handles exceptions properly."""
         # Mock agent creation to raise an exception
-        mock_agent = mocker.patch('evaluate_translation.create_langchain_agent')
+        mock_agent = mocker.patch('src.evaluate_translation.create_langchain_agent')
         mock_agent.side_effect = Exception("Test exception")
 
         # Should raise the exception

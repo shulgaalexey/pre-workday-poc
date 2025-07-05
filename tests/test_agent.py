@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from agent import create_langchain_agent, echo_tool
+from src.agent import create_langchain_agent, echo_tool
 
 
 class TestEchoTool:
@@ -38,8 +38,8 @@ class TestAgentCreation:
     """Test cases for agent creation and configuration."""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test_key"})
-    @patch('agent.create_react_agent')
-    @patch('agent.OpenAI')
+    @patch('src.agent.create_react_agent')
+    @patch('src.agent.OpenAI')
     def test_create_agent_success(self, mock_openai, mock_create_react_agent):
         """Test successful agent creation with valid API key."""
         # Mock the LLM and agent
@@ -56,7 +56,7 @@ class TestAgentCreation:
         mock_openai.assert_called_once()
         mock_create_react_agent.assert_called_once()
 
-    @patch('agent.load_dotenv')
+    @patch('src.agent.load_dotenv')
     @patch.dict(os.environ, {}, clear=True)
     def test_create_agent_missing_api_key(self, mock_load_dotenv):
         """Test agent creation fails without API key."""
@@ -66,7 +66,7 @@ class TestAgentCreation:
         with pytest.raises(ValueError, match="OPENAI_API_KEY not found"):
             create_langchain_agent()
 
-    @patch('agent.load_dotenv')
+    @patch('src.agent.load_dotenv')
     @patch.dict(os.environ, {"OPENAI_API_KEY": ""})
     def test_create_agent_empty_api_key(self, mock_load_dotenv):
         """Test agent creation fails with empty API key."""
@@ -83,7 +83,7 @@ class TestMemoryFunctionality:
     def test_memory_flow(self, mocker):
         """Test that the agent's memory feature is working correctly."""
         # Mock ChatOpenAI so we don't hit OpenAI
-        mocker.patch("agent.ChatOpenAI", autospec=True)
+        mocker.patch("src.agent.ChatOpenAI", autospec=True)
 
         agent = create_langchain_agent()
 
@@ -92,19 +92,19 @@ class TestMemoryFunctionality:
         assert "Hello" in agent.memory.buffer_as_str
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test_key"})
-    @patch('agent.load_config')
+    @patch('src.agent.load_config')
     def test_sql_memory_persists(self, mock_load_config, tmp_path, mocker):
         """Test that SQL memory persistence creates database file."""
         # Mock the config to use persistent-sqlite memory
         mock_load_config.return_value = {"memory": "persistent-sqlite"}
 
         # Mock ChatOpenAI and the agent invoke method to avoid API calls
-        mock_chat_openai = mocker.patch("agent.ChatOpenAI", autospec=True)
+        mock_chat_openai = mocker.patch("src.agent.ChatOpenAI", autospec=True)
         mock_llm_instance = MagicMock()
         mock_chat_openai.return_value = mock_llm_instance
 
         # Mock the agent executor's invoke method
-        mock_agent_executor = mocker.patch("agent.initialize_agent")
+        mock_agent_executor = mocker.patch("src.agent.initialize_agent")
         mock_agent_instance = MagicMock()
         mock_agent_executor.return_value = mock_agent_instance
 

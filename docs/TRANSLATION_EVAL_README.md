@@ -9,7 +9,7 @@ A LangChain-based translation quality assessment system that measures BLEU score
 pip install -r requirements.txt
 
 # Run evaluation
-python evaluate_translation.py
+python src/evaluate_translation.py
 
 # Run tests
 pytest -v
@@ -17,9 +17,9 @@ pytest -v
 
 ## Core Components
 
-- **`evaluate_translation.py`** - Main evaluation script with BLEU scoring
-- **`agent.py`** - LangChain agent with OpenAI integration and translation tools
-- **`test_*.py`** - Pytest test suites with `@pytest.mark.translation_eval` markers
+- **`src/evaluate_translation.py`** - Main evaluation script with BLEU scoring
+- **`src/agent.py`** - LangChain agent with OpenAI integration and translation tools
+- **`tests/test_*.py`** - Pytest test suites with `@pytest.mark.translation_eval` markers
 - **GitHub Actions** - Automated CI/CD that fails builds below 50% BLEU score
 
 ## Test Commands
@@ -37,7 +37,7 @@ python examples/agent_demo.py
 
 ## Configuration
 
-- **BLEU Threshold**: 50% (configurable in `evaluate_translation.py`)
+- **BLEU Threshold**: 50% (configurable in `src/evaluate_translation.py`)
 - **Test Dataset**: Spanish/German translation pairs in code
 - **Environment**: Requires `OPENAI_API_KEY` for CI/CD
 - **Markers**: `translation_eval`, `slow` for pytest filtering

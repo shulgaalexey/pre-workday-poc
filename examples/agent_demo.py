@@ -12,7 +12,7 @@ import sys
 # Add parent directory to path to import agent module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agent import create_langchain_agent
+from src.agent import create_langchain_agent
 
 # Set up logging for the example
 logging.basicConfig(level=logging.INFO)
