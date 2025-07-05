@@ -126,18 +126,42 @@ def translate_tool(input_text: str) -> str:
         try:
             glossary_terms = ", ".join([f"{g['source_term']} -> {g['target_term']}" for g in glossary])
             glossary_context = f"\nUse these glossary terms exactly: {glossary_terms}"
-        except UnicodeEncodeError as e:
+        except (UnicodeEncodeError, UnicodeDecodeError) as e:
             logger.warning(f"Unicode encoding error in glossary: {e}")
             glossary_context = "\nUse standard translation practices."
 
+    # Enhanced prompt to ensure only the translation is returned
+    system_prompt = (
+        f"You are a professional translator. Translate the given text to {language}. "
+        f"Return ONLY the translated text, nothing else. Do not include any explanations, "
+        f"quotes, or additional text. Just the direct translation.{glossary_context}"
+    )
+
     messages = [
-        SystemMessage(content=f"Translate the following text to {language}. Return only the translated text.{glossary_context}"),
+        SystemMessage(content=system_prompt),
         HumanMessage(content=text)
     ]
 
     try:
         response = chat_llm.invoke(messages)
         result = response.content.strip()
+
+        # Remove any potential quotes or extra formatting
+        if result.startswith('"') and result.endswith('"'):
+            result = result[1:-1]
+        if result.startswith("'") and result.endswith("'"):
+            result = result[1:-1]
+
+        # Ensure proper UTF-8 encoding for Windows compatibility
+        try:
+            # Test encoding/decoding to catch issues early
+            encoded = result.encode('utf-8')
+            result = encoded.decode('utf-8')
+        except (UnicodeEncodeError, UnicodeDecodeError) as e:
+            logger.warning(f"Unicode encoding issue with result: {e}")
+            # Fallback to ASCII-safe version if needed
+            result = result.encode('ascii', errors='replace').decode('ascii')
+
         logger.info(f"Translation result: {result}")
         return result
     except Exception as e:

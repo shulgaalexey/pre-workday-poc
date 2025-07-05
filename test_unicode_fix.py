@@ -4,9 +4,9 @@ Test script to verify Unicode encoding fix for Windows GitHub Actions.
 This reproduces the exact scenario that was failing.
 """
 
-import sys
 import io
-from contextlib import redirect_stdout, redirect_stderr
+import sys
+from contextlib import redirect_stderr, redirect_stdout
 
 
 def test_unicode_output():
@@ -39,14 +39,14 @@ def test_unicode_output():
         assert "[SUCCESS]" in stdout_content
         assert "[FAIL]" in stdout_content
 
-        print("✓ Unicode encoding test passed - all output uses ASCII-compatible characters")
+        print("Unicode encoding test passed - all output uses ASCII-compatible characters")
         return True
 
     except UnicodeEncodeError as e:
-        print(f"✗ Unicode encoding test failed: {e}")
+        print(f"Unicode encoding test failed: {e}")
         return False
     except Exception as e:
-        print(f"✗ Test failed with unexpected error: {e}")
+        print(f"Test failed with unexpected error: {e}")
         return False
 
 
@@ -67,14 +67,14 @@ def test_cp1252_encoding():
             decoded = encoded.decode('cp1252')
             assert decoded == test_string, f"Encoding/decoding mismatch for: {test_string}"
 
-        print("✓ CP1252 encoding test passed - all strings are Windows-compatible")
+        print("CP1252 encoding test passed - all strings are Windows-compatible")
         return True
 
     except UnicodeEncodeError as e:
-        print(f"✗ CP1252 encoding test failed: {e}")
+        print(f"CP1252 encoding test failed: {e}")
         return False
     except Exception as e:
-        print(f"✗ Test failed with unexpected error: {e}")
+        print(f"Test failed with unexpected error: {e}")
         return False
 
 
@@ -86,9 +86,9 @@ if __name__ == "__main__":
     test2_passed = test_cp1252_encoding()
 
     if test1_passed and test2_passed:
-        print("\n✓ All Unicode encoding tests passed!")
+        print("\nAll Unicode encoding tests passed!")
         print("The fix should work correctly in Windows GitHub Actions environment.")
         sys.exit(0)
     else:
-        print("\n✗ Some tests failed!")
+        print("\nSome tests failed!")
         sys.exit(1)
