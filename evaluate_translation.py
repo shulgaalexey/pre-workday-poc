@@ -149,7 +149,7 @@ def main():
         if not openai_key:
             logger.error("OPENAI_API_KEY not found in environment variables")
             logger.error("Ensure OPENAI_API_KEY is set as a GitHub secret or in your .env file")
-            print("❌ OPENAI_API_KEY not found in environment variables")
+            print("[ERROR] OPENAI_API_KEY not found in environment variables")
             sys.exit(1)
 
         # Run evaluation
@@ -164,15 +164,15 @@ def main():
         BLEU_THRESHOLD = 50.0
 
         if bleu_score >= BLEU_THRESHOLD:
-            print(f"✅ BLEU score {bleu_score}% meets threshold of {BLEU_THRESHOLD}%")
+            print(f"[SUCCESS] BLEU score {bleu_score}% meets threshold of {BLEU_THRESHOLD}%")
             sys.exit(0)
         else:
-            print(f"❌ BLEU score {bleu_score}% below threshold of {BLEU_THRESHOLD}%")
+            print(f"[FAIL] BLEU score {bleu_score}% below threshold of {BLEU_THRESHOLD}%")
             sys.exit(1)
 
     except Exception as e:
         logger.error(f"Evaluation failed: {e}")
-        print(f"❌ Evaluation failed: {e}")
+        print(f"[ERROR] Evaluation failed: {e}")
         sys.exit(1)
 
 
