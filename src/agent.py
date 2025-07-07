@@ -13,11 +13,16 @@ from typing import Any, Dict
 import yaml
 from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, AgentType, Tool, initialize_agent
-from langchain.memory import ConversationBufferMemory
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.memory import (ConversationBufferMemory,
+                              VectorStoreRetrieverMemory)
 from langchain.schema import HumanMessage, SystemMessage
+from langchain.vectorstores import FAISS  # or Chroma
 from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
+
+from .openai_config import get_openai_api_key
 
 # Alias for tests and to match expected OpenAI reference in tests
 OpenAI = ChatOpenAI
@@ -72,6 +77,21 @@ def echo_tool(text: str) -> str:
     return f"Echo: {text}"
 
 
+def _get_vector_memory(store_path: str = "translation_mem.index"):
+    openai_api_key = get_openai_api_key()
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    if os.path.exists(store_path):
+        vs = FAISS.load_local(store_path, embeddings)
+    else:
+        vs = FAISS.from_texts([], embeddings)   # start empty
+    return VectorStoreRetrieverMemory(
+        vectorstore=vs,
+        memory_key="tm_history",
+        return_messages=True
+    )
+
+
+
 # Load glossary once with proper encoding
 try:
     glossary_path = get_project_root() / "data" / "glossary.json"
@@ -114,11 +134,12 @@ def translate_tool(input_text: str) -> str:
 
     logger.info(f"Translating to %s: %s", language, text)
 
-    # Get API key - should already be available in environment
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    if not openai_api_key:
-        logger.error("OPENAI_API_KEY not found in environment variables")
-        return "Translation failed: OPENAI_API_KEY not found in environment variables"
+    # Get API key using centralized function
+    try:
+        openai_api_key = get_openai_api_key()
+    except ValueError as e:
+        logger.error(str(e))
+        return f"Translation failed: {str(e)}"
 
     # Use LangChain ChatOpenAI for proper integration
     chat_llm = ChatOpenAI(
@@ -235,16 +256,8 @@ def create_langchain_agent() -> AgentExecutor:
     Raises:
         ValueError: If OPENAI_API_KEY is not found in environment
     """
-    # Load API key from .env file (for local development)
-    # In CI/CD environments, the key should already be in environment variables
-    load_dotenv()
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-
-    if not openai_api_key:
-        logger.error("OPENAI_API_KEY not found in environment variables")
-        logger.error("For local development, ensure you have a .env file with OPENAI_API_KEY=your_key")
-        logger.error("For CI/CD, ensure OPENAI_API_KEY is set as a secret")
-        raise ValueError("OPENAI_API_KEY not found in environment variables")
+    # Get API key using centralized function
+    openai_api_key = get_openai_api_key()
 
     logger.info("Initializing LangChain agent with OpenAI LLM")
 

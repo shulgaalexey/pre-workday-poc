@@ -56,7 +56,7 @@ class TestAgentCreation:
         mock_openai.assert_called_once()
         mock_create_react_agent.assert_called_once()
 
-    @patch('src.agent.load_dotenv')
+    @patch('src.openai_config.load_dotenv')
     @patch.dict(os.environ, {}, clear=True)
     def test_create_agent_missing_api_key(self, mock_load_dotenv):
         """Test agent creation fails without API key."""
@@ -66,7 +66,7 @@ class TestAgentCreation:
         with pytest.raises(ValueError, match="OPENAI_API_KEY not found"):
             create_langchain_agent()
 
-    @patch('src.agent.load_dotenv')
+    @patch('src.openai_config.load_dotenv')
     @patch.dict(os.environ, {"OPENAI_API_KEY": ""})
     def test_create_agent_empty_api_key(self, mock_load_dotenv):
         """Test agent creation fails with empty API key."""

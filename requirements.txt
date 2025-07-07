@@ -14,3 +14,5 @@ datasets>=2.14.0
 
 # Additional testing dependencies
 pytest-cov>=4.1.0
+
+faiss-cpu>=1.11.0
