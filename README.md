@@ -22,7 +22,7 @@ pytest -v
 ## Features
 
 - **LangChain agent** with ReAct pattern and translation tools
-- **Memory options**: In-memory (default) or persistent SQLite
+- **Memory options**: In-memory, persistent SQLite, or vector store (FAISS)
 - **Translation evaluation** with BLEU scoring and CI/CD integration
 - **Interactive chat** and comprehensive testing
 
@@ -139,7 +139,16 @@ memory: "in-memory"
 
 # For production (persistent across sessions)
 memory: "persistent-sqlite"
+
+# For semantic retrieval (vector-based memory)
+memory: "vector-store"
 ```
+
+Memory types explained:
+
+- **in-memory**: Standard conversation buffer, resets on restart
+- **persistent-sqlite**: SQLite-backed persistence across sessions
+- **vector-store**: FAISS vector store for semantic retrieval and similarity-based memory
 
 After changing memory type, restart the application for changes to take effect.
 
@@ -174,7 +183,7 @@ python src/agent.py
 **Memory** - Edit `.config.yaml`:
 
 ```yaml
-memory: "in-memory"          # or "persistent-sqlite"
+memory: "in-memory"          # or "persistent-sqlite" or "vector-store"
 ```
 
 **Translation** - BLEU threshold in `src/evaluate_translation.py`:

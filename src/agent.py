@@ -13,11 +13,19 @@ from typing import Any, Dict
 import yaml
 from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, AgentType, Tool, initialize_agent
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import (ConversationBufferMemory,
+                              VectorStoreRetrieverMemory)
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_community.chat_message_histories import SQLChatMessageHistory
-from langchain_openai import ChatOpenAI
+from langchain_community.vectorstores import FAISS  # or Chroma
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from openai import OpenAI
+
+try:
+    from .openai_config import get_openai_api_key
+except ImportError:
+    # Handle case when module is run directly
+    from openai_config import get_openai_api_key
 
 # Alias for tests and to match expected OpenAI reference in tests
 OpenAI = ChatOpenAI
@@ -114,11 +122,12 @@ def translate_tool(input_text: str) -> str:
 
     logger.info(f"Translating to %s: %s", language, text)
 
-    # Get API key - should already be available in environment
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    if not openai_api_key:
-        logger.error("OPENAI_API_KEY not found in environment variables")
-        return "Translation failed: OPENAI_API_KEY not found in environment variables"
+    # Get API key using centralized function
+    try:
+        openai_api_key = get_openai_api_key()
+    except ValueError as e:
+        logger.error(str(e))
+        return f"Translation failed: {str(e)}"
 
     # Use LangChain ChatOpenAI for proper integration
     chat_llm = ChatOpenAI(
@@ -176,6 +185,38 @@ def translate_tool(input_text: str) -> str:
         return f"Translation failed: {str(e)}"
 
 
+def _get_vector_memory(store_path: str = "translation_mem.index"):
+    """
+    Create vector store retriever memory for semantic conversation history.
+
+    Args:
+        store_path: Path to the FAISS index directory
+
+    Returns:
+        VectorStoreRetrieverMemory instance
+    """
+    openai_api_key = get_openai_api_key()
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+
+    if os.path.exists(store_path):
+        # Set allow_dangerous_deserialization=True for trusted local files
+        # This is safe since we control the creation and storage of these files
+        vs = FAISS.load_local(store_path, embeddings, allow_dangerous_deserialization=True)
+    else:
+        # Start with minimal content - empty list doesn't work well with FAISS
+        vs = FAISS.from_texts(["Initial memory setup"], embeddings)
+
+    # Create retriever from vectorstore - ensure it's properly initialized
+    retriever = vs.as_retriever(search_kwargs={"k": 4})
+
+    # Create memory with correct parameters for LangChain 0.3.x
+    return VectorStoreRetrieverMemory(
+        retriever=retriever,
+        memory_key="chat_history",  # Use consistent memory key
+        return_docs=False
+    )
+
+
 # New function to initialize the ReAct agent for testability and separation of concerns
 def create_react_agent(llm: Any, tools: list) -> Any:
     """
@@ -187,6 +228,12 @@ def create_react_agent(llm: Any, tools: list) -> Any:
 
     Returns:
         An initialized agent instance
+
+    Note:
+        Memory type is determined by configuration:
+        - "in-memory": Standard conversation buffer memory
+        - "persistent-sqlite": SQLite-backed persistent memory
+        - "vector-store": FAISS vector store memory for semantic retrieval
     """
     # Load configuration to determine memory type
     config = load_config()
@@ -204,6 +251,10 @@ def create_react_agent(llm: Any, tools: list) -> Any:
             return_messages=True
         )
         logger.info("Using persistent SQLite memory")
+    elif memory_type == "vector-store":
+        # ----- Vector store memory for semantic retrieval -----
+        memory = _get_vector_memory()
+        logger.info("Using vector store memory with FAISS")
     else:
         # Default in-memory configuration
         memory = ConversationBufferMemory(
@@ -212,8 +263,14 @@ def create_react_agent(llm: Any, tools: list) -> Any:
         )
         logger.info("Using in-memory memory")
 
+    # To keep the existing SQLChatMessageHistory too by chaining memories (CombinedMemory) if you want both turn-by-turn chat and long-term retrieval
+
     # memory.save_context({"input": "You are a helpful translator"}, {"output": "Hi there! Got it."})
-    logger.debug("Current memory buffer: %s", memory.buffer_as_str)
+    # Only log buffer contents for memory types that support it
+    if hasattr(memory, 'buffer_as_str'):
+        logger.debug("Current memory buffer: %s", memory.buffer_as_str)
+    else:
+        logger.debug("Memory type: %s", type(memory).__name__)
 
     return initialize_agent(
         tools,
@@ -235,16 +292,8 @@ def create_langchain_agent() -> AgentExecutor:
     Raises:
         ValueError: If OPENAI_API_KEY is not found in environment
     """
-    # Load API key from .env file (for local development)
-    # In CI/CD environments, the key should already be in environment variables
-    load_dotenv()
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-
-    if not openai_api_key:
-        logger.error("OPENAI_API_KEY not found in environment variables")
-        logger.error("For local development, ensure you have a .env file with OPENAI_API_KEY=your_key")
-        logger.error("For CI/CD, ensure OPENAI_API_KEY is set as a secret")
-        raise ValueError("OPENAI_API_KEY not found in environment variables")
+    # Get API key using centralized function
+    openai_api_key = get_openai_api_key()
 
     logger.info("Initializing LangChain agent with OpenAI LLM")
 

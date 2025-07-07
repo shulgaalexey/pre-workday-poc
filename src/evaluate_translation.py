@@ -18,9 +18,11 @@ from langchain.evaluation import load_evaluator
 
 try:
     from .agent import create_langchain_agent
+    from .openai_config import check_openai_api_key, log_api_key_debug_info
 except ImportError:
     # Fallback for direct script execution
     from agent import create_langchain_agent
+    from openai_config import check_openai_api_key, log_api_key_debug_info
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -205,8 +207,11 @@ def evaluate_translations() -> List[Dict[str, Any]]:
 
         for i, test_case in enumerate(DATASET):
             try:
-                # Get agent response
-                result = agent.invoke({"input": test_case["input"]})
+                # Get agent response - include chat_history for conversational agents
+                result = agent.invoke({
+                    "input": test_case["input"],
+                    "chat_history": []
+                })
                 raw_prediction = result.get("output", "")
 
                 # Extract just the translation from the agent response
@@ -259,19 +264,12 @@ def main():
     load_dotenv()
 
     try:
-        # Debug environment variables
+        # Debug environment variables using centralized function
         logger.info("Starting translation evaluation")
-        openai_key = os.getenv("OPENAI_API_KEY")
-        if openai_key:
-            logger.info(f"OPENAI_API_KEY found (length: {len(openai_key)})")
-        else:
-            logger.error("OPENAI_API_KEY not found in environment variables")
-            logger.error("Available environment variables:")
-            for key in sorted(os.environ.keys()):
-                if 'API' in key or 'OPENAI' in key:
-                    logger.error(f"  {key}: {'SET' if os.environ[key] else 'EMPTY'}")
+        log_api_key_debug_info()
 
-        # Check if OPENAI_API_KEY is available
+        # Check if OPENAI_API_KEY is available using centralized function
+        openai_key = check_openai_api_key()
         if not openai_key:
             logger.error("OPENAI_API_KEY not found in environment variables")
             logger.error("Ensure OPENAI_API_KEY is set as a GitHub secret or in your .env file")
