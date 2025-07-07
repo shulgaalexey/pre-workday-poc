@@ -13,16 +13,20 @@ from typing import Any, Dict
 import yaml
 from dotenv import load_dotenv
 from langchain.agents import AgentExecutor, AgentType, Tool, initialize_agent
-from langchain.embeddings import OpenAIEmbeddings
 from langchain.memory import (ConversationBufferMemory,
                               VectorStoreRetrieverMemory)
 from langchain.schema import HumanMessage, SystemMessage
-from langchain.vectorstores import FAISS  # or Chroma
 from langchain_community.chat_message_histories import SQLChatMessageHistory
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS  # or Chroma
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 
-from .openai_config import get_openai_api_key
+try:
+    from .openai_config import get_openai_api_key
+except ImportError:
+    # Handle case when module is run directly
+    from openai_config import get_openai_api_key
 
 # Alias for tests and to match expected OpenAI reference in tests
 OpenAI = ChatOpenAI
