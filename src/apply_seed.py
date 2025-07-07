@@ -1,8 +1,8 @@
 import json
 import pathlib
 
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
 
 from agent import _get_vector_memory
 

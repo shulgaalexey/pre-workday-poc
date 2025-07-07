@@ -26,6 +26,18 @@ When you changed the code, you MUST run all the available tests using the instur
 cd c:\src\pre-workday-poc && python -m pytest . -v --tb=short
 ```
 
+Ensure that the virtual environment is activated before running the tests.
+When it is activated, the terminal prompt should look like this:
+```powershell
+(.venv) PS C:\src\pre-workday-poc> .\.venv\Scripts\activate
+```
+
+To activate the virtual environment, run:
+```powershell
+cd c:\src\pre-workday-poc && .\.venv\Scripts\activate
+```
+
+
 ## If you come up with more good ideas
 If you come up with more good ideas to improve the code or structure of the repo, please document them here in the .github/copilot-instructions.md file.
 

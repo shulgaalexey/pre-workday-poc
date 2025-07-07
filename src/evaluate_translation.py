@@ -207,8 +207,11 @@ def evaluate_translations() -> List[Dict[str, Any]]:
 
         for i, test_case in enumerate(DATASET):
             try:
-                # Get agent response
-                result = agent.invoke({"input": test_case["input"]})
+                # Get agent response - include chat_history for conversational agents
+                result = agent.invoke({
+                    "input": test_case["input"],
+                    "chat_history": []
+                })
                 raw_prediction = result.get("output", "")
 
                 # Extract just the translation from the agent response

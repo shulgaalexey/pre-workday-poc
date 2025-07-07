@@ -17,9 +17,8 @@ from langchain.memory import (ConversationBufferMemory,
                               VectorStoreRetrieverMemory)
 from langchain.schema import HumanMessage, SystemMessage
 from langchain_community.chat_message_histories import SQLChatMessageHistory
-from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS  # or Chroma
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from openai import OpenAI
 
 try:
@@ -187,18 +186,34 @@ def translate_tool(input_text: str) -> str:
 
 
 def _get_vector_memory(store_path: str = "translation_mem.index"):
+    """
+    Create vector store retriever memory for semantic conversation history.
+
+    Args:
+        store_path: Path to the FAISS index directory
+
+    Returns:
+        VectorStoreRetrieverMemory instance
+    """
     openai_api_key = get_openai_api_key()
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+
     if os.path.exists(store_path):
         # Set allow_dangerous_deserialization=True for trusted local files
         # This is safe since we control the creation and storage of these files
         vs = FAISS.load_local(store_path, embeddings, allow_dangerous_deserialization=True)
     else:
-        vs = FAISS.from_texts([], embeddings)   # start empty
+        # Start with minimal content - empty list doesn't work well with FAISS
+        vs = FAISS.from_texts(["Initial memory setup"], embeddings)
+
+    # Create retriever from vectorstore - ensure it's properly initialized
+    retriever = vs.as_retriever(search_kwargs={"k": 4})
+
+    # Create memory with correct parameters for LangChain 0.3.x
     return VectorStoreRetrieverMemory(
-        vectorstore=vs,
-        memory_key="tm_history",
-        return_messages=True
+        retriever=retriever,
+        memory_key="chat_history",  # Use consistent memory key
+        return_docs=False
     )
 
 
@@ -251,7 +266,11 @@ def create_react_agent(llm: Any, tools: list) -> Any:
     # To keep the existing SQLChatMessageHistory too by chaining memories (CombinedMemory) if you want both turn-by-turn chat and long-term retrieval
 
     # memory.save_context({"input": "You are a helpful translator"}, {"output": "Hi there! Got it."})
-    logger.debug("Current memory buffer: %s", memory.buffer_as_str)
+    # Only log buffer contents for memory types that support it
+    if hasattr(memory, 'buffer_as_str'):
+        logger.debug("Current memory buffer: %s", memory.buffer_as_str)
+    else:
+        logger.debug("Memory type: %s", type(memory).__name__)
 
     return initialize_agent(
         tools,
