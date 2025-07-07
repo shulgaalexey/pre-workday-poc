@@ -40,14 +40,15 @@ def test_unicode_output():
         assert "[FAIL]" in stdout_content
 
         print("Unicode encoding test passed - all output uses ASCII-compatible characters")
-        return True
+        # Use assertion instead of return for pytest
+        assert True
 
     except UnicodeEncodeError as e:
         print(f"Unicode encoding test failed: {e}")
-        return False
+        assert False, f"Unicode encoding test failed: {e}"
     except Exception as e:
         print(f"Test failed with unexpected error: {e}")
-        return False
+        assert False, f"Test failed with unexpected error: {e}"
 
 
 def test_cp1252_encoding():
@@ -68,14 +69,15 @@ def test_cp1252_encoding():
             assert decoded == test_string, f"Encoding/decoding mismatch for: {test_string}"
 
         print("CP1252 encoding test passed - all strings are Windows-compatible")
-        return True
+        # Use assertion instead of return for pytest
+        assert True
 
     except UnicodeEncodeError as e:
         print(f"CP1252 encoding test failed: {e}")
-        return False
+        assert False, f"CP1252 encoding test failed: {e}"
     except Exception as e:
         print(f"Test failed with unexpected error: {e}")
-        return False
+        assert False, f"Test failed with unexpected error: {e}"
 
 
 if __name__ == "__main__":

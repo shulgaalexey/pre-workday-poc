@@ -190,7 +190,9 @@ def _get_vector_memory(store_path: str = "translation_mem.index"):
     openai_api_key = get_openai_api_key()
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
     if os.path.exists(store_path):
-        vs = FAISS.load_local(store_path, embeddings)
+        # Set allow_dangerous_deserialization=True for trusted local files
+        # This is safe since we control the creation and storage of these files
+        vs = FAISS.load_local(store_path, embeddings, allow_dangerous_deserialization=True)
     else:
         vs = FAISS.from_texts([], embeddings)   # start empty
     return VectorStoreRetrieverMemory(

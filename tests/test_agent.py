@@ -80,8 +80,12 @@ class TestMemoryFunctionality:
     """Test cases for agent memory functionality."""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test_key"})
-    def test_memory_flow(self, mocker):
+    @patch('src.agent.load_config')
+    def test_memory_flow(self, mock_load_config, mocker):
         """Test that the agent's memory feature is working correctly."""
+        # Mock the config to use in-memory to avoid FAISS dependency
+        mock_load_config.return_value = {"memory": "in-memory"}
+
         # Mock ChatOpenAI so we don't hit OpenAI
         mocker.patch("src.agent.ChatOpenAI", autospec=True)
 
