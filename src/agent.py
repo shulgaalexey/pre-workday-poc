@@ -81,21 +81,6 @@ def echo_tool(text: str) -> str:
     return f"Echo: {text}"
 
 
-def _get_vector_memory(store_path: str = "translation_mem.index"):
-    openai_api_key = get_openai_api_key()
-    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-    if os.path.exists(store_path):
-        vs = FAISS.load_local(store_path, embeddings)
-    else:
-        vs = FAISS.from_texts([], embeddings)   # start empty
-    return VectorStoreRetrieverMemory(
-        vectorstore=vs,
-        memory_key="tm_history",
-        return_messages=True
-    )
-
-
-
 # Load glossary once with proper encoding
 try:
     glossary_path = get_project_root() / "data" / "glossary.json"
@@ -201,6 +186,20 @@ def translate_tool(input_text: str) -> str:
         return f"Translation failed: {str(e)}"
 
 
+def _get_vector_memory(store_path: str = "translation_mem.index"):
+    openai_api_key = get_openai_api_key()
+    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    if os.path.exists(store_path):
+        vs = FAISS.load_local(store_path, embeddings)
+    else:
+        vs = FAISS.from_texts([], embeddings)   # start empty
+    return VectorStoreRetrieverMemory(
+        vectorstore=vs,
+        memory_key="tm_history",
+        return_messages=True
+    )
+
+
 # New function to initialize the ReAct agent for testability and separation of concerns
 def create_react_agent(llm: Any, tools: list) -> Any:
     """
@@ -212,6 +211,12 @@ def create_react_agent(llm: Any, tools: list) -> Any:
 
     Returns:
         An initialized agent instance
+
+    Note:
+        Memory type is determined by configuration:
+        - "in-memory": Standard conversation buffer memory
+        - "persistent-sqlite": SQLite-backed persistent memory
+        - "vector-store": FAISS vector store memory for semantic retrieval
     """
     # Load configuration to determine memory type
     config = load_config()
@@ -229,6 +234,10 @@ def create_react_agent(llm: Any, tools: list) -> Any:
             return_messages=True
         )
         logger.info("Using persistent SQLite memory")
+    elif memory_type == "vector-store":
+        # ----- Vector store memory for semantic retrieval -----
+        memory = _get_vector_memory()
+        logger.info("Using vector store memory with FAISS")
     else:
         # Default in-memory configuration
         memory = ConversationBufferMemory(
@@ -236,6 +245,8 @@ def create_react_agent(llm: Any, tools: list) -> Any:
             return_messages=True
         )
         logger.info("Using in-memory memory")
+
+    # To keep the existing SQLChatMessageHistory too by chaining memories (CombinedMemory) if you want both turn-by-turn chat and long-term retrieval
 
     # memory.save_context({"input": "You are a helpful translator"}, {"output": "Hi there! Got it."})
     logger.debug("Current memory buffer: %s", memory.buffer_as_str)

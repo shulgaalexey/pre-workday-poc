@@ -23,7 +23,7 @@ The app should run on both a local Windows machine and in the GitHub Actions env
 # IMPORTANT
 When you changed the code, you MUST run all the available tests using the insturction like below:
 ```powershell
-cd c:\src\pre-workday-poc && pytest . -v --tb=short
+cd c:\src\pre-workday-poc && python -m pytest . -v --tb=short
 ```
 
 ## If you come up with more good ideas

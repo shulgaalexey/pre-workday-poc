@@ -118,6 +118,34 @@ class TestMemoryFunctionality:
         db_path.touch()
         assert db_path.exists()
 
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "test_key"})
+    @patch('src.agent.load_config')
+    @patch('src.agent._get_vector_memory')
+    def test_vector_memory_initialization(self, mock_get_vector_memory, mock_load_config, mocker):
+        """Test that vector memory is properly initialized when configured."""
+        # Mock the config to use vector-store memory
+        mock_load_config.return_value = {"memory": "vector-store"}
+
+        # Mock the vector memory
+        mock_vector_memory = MagicMock()
+        mock_get_vector_memory.return_value = mock_vector_memory
+
+        # Mock ChatOpenAI and the agent invoke method to avoid API calls
+        mock_chat_openai = mocker.patch("src.agent.ChatOpenAI", autospec=True)
+        mock_llm_instance = MagicMock()
+        mock_chat_openai.return_value = mock_llm_instance
+
+        # Mock the agent executor's invoke method
+        mock_agent_executor = mocker.patch("src.agent.initialize_agent")
+        mock_agent_instance = MagicMock()
+        mock_agent_executor.return_value = mock_agent_instance
+
+        agent = create_langchain_agent()
+
+        # Verify the vector memory was called
+        mock_get_vector_memory.assert_called_once()
+        assert agent is mock_agent_instance
+
 
 if __name__ == "__main__":
     # Run tests if called directly
