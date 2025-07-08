@@ -17,6 +17,13 @@ This repository hosts proof-of-concept (PoC) agents built with LangChain / AutoG
 9. **Copilot usage** – for new files, Copilot should scaffold docstrings, logging setup, and a basic pytest skeleton automatically.
 
 
+**Note**
+- Use the `src/` directory for source files.
+- Use the `tests/` directory for unit tests.
+- Use the `data/` directory for static data files.
+- Use the `examples/` directory for experimental scripts or notebooks.
+- Use the `docs/` directory for documentation files.
+
 # IMPORTANT
 The app should run on both a local Windows machine and in the GitHub Actions environment.
 
