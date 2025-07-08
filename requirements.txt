@@ -26,5 +26,9 @@ matplotlib>=3.10.3
 # Web UI framework
 streamlit>=1.46.1
 
-# ML experiment tracking
+# COMET evaluation model for translation quality
 comet-ml>=3.49.11
+
+# COMET model for neural translation evaluation
+# Note: This requires PyTorch. Install with: pip install comet-ml[model]
+unbabel-comet>=2.2.2
