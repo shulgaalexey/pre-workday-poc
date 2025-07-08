@@ -10,10 +10,13 @@ Built for Windows + VS Code environment with clarity-first approach.
 Includes quality gate checks for CI/CD pipelines.
 """
 
+import os
+# Fix OpenMP library conflict issue in CI/CD environments
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 import datetime
 import json
 import logging
-import os
 import pathlib
 import re
 import sys
@@ -35,9 +38,9 @@ except ImportError:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Try to import COMET for neural evaluation
+# Check COMET availability (but don't import yet to avoid OpenMP issues in tests)
 try:
-    from comet import download_model, load_from_checkpoint
+    import comet
     COMET_AVAILABLE = True
     logger.info("COMET is available for neural evaluation")
 except ImportError:
@@ -270,6 +273,9 @@ def comet_score(refs: List[str], hyps: List[str], srcs: List[str]) -> float:
             logger.error("Mismatched lengths for COMET calculation")
             return 0.0
 
+        # Import COMET functions only when needed to avoid OpenMP issues
+        from comet import download_model, load_from_checkpoint
+
         logger.info("Downloading COMET model (this may take a while on first run)")
         model_path = download_model("Unbabel/wmt22-comet-da")
         model = load_from_checkpoint(model_path)
@@ -285,7 +291,7 @@ def comet_score(refs: List[str], hyps: List[str], srcs: List[str]) -> float:
 
         logger.info(f"Calculating COMET score for {len(data)} examples")
         model_output = model.predict(data, batch_size=8, gpus=0)
-
+        
         # COMET returns (seg_scores, sys_score)
         if isinstance(model_output, tuple) and len(model_output) == 2:
             seg_scores, sys_score = model_output

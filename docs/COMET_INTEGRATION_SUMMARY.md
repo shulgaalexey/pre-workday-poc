@@ -23,6 +23,8 @@ I have successfully integrated COMET (Crosslingual Optimized Metric for Evaluati
    - Graceful fallback when COMET is not available
    - Comprehensive exception handling throughout
    - Detailed logging for debugging and monitoring
+   - OpenMP library conflict resolution with `KMP_DUPLICATE_LIB_OK=TRUE`
+   - Lazy loading of COMET libraries to improve performance and avoid conflicts
 
 ### ✅ Testing and Documentation
 

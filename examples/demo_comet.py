@@ -6,6 +6,9 @@ a real OpenAI API key, using mocked agent responses.
 """
 
 import os
+# Fix OpenMP library conflict issue in CI/CD environments
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 import sys
 import tempfile
 from unittest.mock import patch, MagicMock

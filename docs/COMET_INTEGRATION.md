@@ -34,6 +34,7 @@ unbabel-comet>=2.2.2
 - Added `datetime` for timestamps
 - Added `sacrebleu` for proper BLEU calculation
 - Added conditional `comet` imports with graceful fallback
+- Added `KMP_DUPLICATE_LIB_OK=TRUE` environment variable to fix OpenMP conflicts
 
 #### New Functions
 
@@ -122,6 +123,8 @@ If either threshold is not met, the script exits with code 1, failing the CI/CD 
 - **Graceful fallback**: If COMET is not available, evaluation continues with BLEU only
 - **Windows compatibility**: All file operations handle Unicode encoding properly
 - **Floating-point precision**: Tests handle minor floating-point precision differences
+- **OpenMP fix**: Added `KMP_DUPLICATE_LIB_OK=TRUE` to resolve library conflicts in CI/CD
+- **Lazy loading**: COMET libraries are only loaded when actually needed to improve performance
 
 ## Implementation Details
 

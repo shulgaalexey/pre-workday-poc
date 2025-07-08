@@ -4,6 +4,10 @@ Test module for COMET evaluation functionality.
 Tests the new COMET scoring integration and helper functions.
 """
 
+import os
+# Fix OpenMP library conflict issue in CI/CD environments
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 import json
 import pathlib
 import tempfile
@@ -49,8 +53,8 @@ class TestCometEvaluation:
         assert calculate_sacrebleu_score(["test"], []) == 0.0
 
     @patch('src.evaluate_translation.COMET_AVAILABLE', True)
-    @patch('src.evaluate_translation.download_model')
-    @patch('src.evaluate_translation.load_from_checkpoint')
+    @patch('comet.download_model')
+    @patch('comet.load_from_checkpoint')
     def test_comet_score_available(self, mock_load_checkpoint, mock_download_model):
         """Test COMET score calculation when COMET is available."""
         # Mock the model and its predict method
