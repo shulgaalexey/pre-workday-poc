@@ -5,6 +5,7 @@ Tests the new COMET scoring integration and helper functions.
 """
 
 import os
+
 # Fix OpenMP library conflict issue in CI/CD environments
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 

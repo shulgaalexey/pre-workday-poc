@@ -6,23 +6,21 @@ a real OpenAI API key, using mocked agent responses.
 """
 
 import os
+
 # Fix OpenMP library conflict issue in CI/CD environments
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 import sys
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from src.evaluate_translation import (
-    calculate_sacrebleu_score,
-    comet_score,
-    extract_source_text,
-    DATASET,
-    COMET_AVAILABLE
-)
+from src.evaluate_translation import (COMET_AVAILABLE, DATASET,
+                                      calculate_sacrebleu_score, comet_score,
+                                      extract_source_text)
+
 
 def demo_comet_evaluation():
     """Demo the COMET evaluation functionality."""

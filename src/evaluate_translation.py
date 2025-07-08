@@ -11,6 +11,7 @@ Includes quality gate checks for CI/CD pipelines.
 """
 
 import os
+
 # Fix OpenMP library conflict issue in CI/CD environments
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -291,7 +292,7 @@ def comet_score(refs: List[str], hyps: List[str], srcs: List[str]) -> float:
 
         logger.info(f"Calculating COMET score for {len(data)} examples")
         model_output = model.predict(data, batch_size=8, gpus=0)
-        
+
         # COMET returns (seg_scores, sys_score)
         if isinstance(model_output, tuple) and len(model_output) == 2:
             seg_scores, sys_score = model_output
