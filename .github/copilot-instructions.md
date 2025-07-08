@@ -11,11 +11,18 @@ This repository hosts proof-of-concept (PoC) agents built with LangChain / AutoG
 5. **PoC mind-set** – optimise for rapid experimentation:
    * Prefer small scripts over deep package hierarchies.
    * Keep experimental code in `examples/` or `notebooks/`.
-6. **Dependencies** – maintain a minimal `requirements.txt`; pin major versions only when necessary.
+6. **Dependencies** – maintain a minimal `requirements.txt`; pin major versions only when necessary; don't forget to add requirements to this file as you work on the tasks in this repo.
 7. **Platform** – assume Windows PowerShell; provide commands accordingly.
 8. **Prompt engineering** – keep LLM prompts explicit and concise; comment any complex reasoning steps.
 9. **Copilot usage** – for new files, Copilot should scaffold docstrings, logging setup, and a basic pytest skeleton automatically.
 
+
+**Note**
+- Use the `src/` directory for source files.
+- Use the `tests/` directory for unit tests.
+- Use the `data/` directory for static data files.
+- Use the `examples/` directory for experimental scripts or notebooks.
+- Use the `docs/` directory for documentation files.
 
 # IMPORTANT
 The app should run on both a local Windows machine and in the GitHub Actions environment.

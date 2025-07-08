@@ -109,7 +109,26 @@ This will:
 - Show results with pass/fail status
 - Generate detailed evaluation reports
 
-### 5. Running Tests
+### 5. Translation Quality Dashboard
+
+View translation evaluation results in a web-based dashboard:
+
+```powershell
+cd c:\src\pre-workday-poc
+streamlit run src/dash.py
+```
+
+The dashboard displays:
+
+- **Interactive bar charts** showing BLEU and COMET scores
+- **Normalized visualization** with both metrics as percentages for easy comparison
+- **Raw score values** displayed on the chart bars
+- **Evaluation timestamp** and run metadata
+- **Translation hypotheses** from the latest evaluation
+
+The dashboard automatically loads the latest evaluation results from `eval_results/latest.json`.
+
+### 6. Running Tests
 
 Execute the test suite:
 
@@ -129,7 +148,7 @@ pytest -m "not translation_eval" -v
 pytest tests/test_agent.py -v
 ```
 
-### 6. Memory Configuration
+### 7. Memory Configuration
 
 Switch between memory types by editing `.config.yaml`:
 
@@ -152,7 +171,7 @@ Memory types explained:
 
 After changing memory type, restart the application for changes to take effect.
 
-### 7. Environment Variables
+### 8. Environment Variables
 
 Ensure your `.env` file contains:
 
@@ -162,7 +181,7 @@ OPENAI_API_KEY=your_actual_api_key_here
 
 The agent requires a valid OpenAI API key to function.
 
-### 8. Troubleshooting
+### 9. Troubleshooting
 
 **Common Issues:**
 

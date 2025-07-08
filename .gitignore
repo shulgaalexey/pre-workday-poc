@@ -210,3 +210,6 @@ __marimo__/
 chat_history.db
 test_chat.db
 translation_mem.index/
+
+eval_results/*.json
+eval_results/*.csv

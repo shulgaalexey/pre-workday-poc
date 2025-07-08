@@ -1,18 +1,34 @@
-langchain>=0.3.0
-langchain-openai>=0.2.0
-langchain-community>=0.3.0
-python-dotenv>=1.0.0
-pytest>=7.0.0
-pytest-mock>=3.0.0
+langchain>=0.3.26
+langchain-openai>=0.3.27
+langchain-community>=0.3.26
+langsmith>=0.4.4
+python-dotenv>=1.1.1
+pytest>=8.4.1
+pytest-mock>=3.14.1
 sqlalchemy>=2.0.41
-pyyaml>=6.0.0
+pyyaml>=6.0.2
 
 # Added for better BLEU evaluation (optional)
-sacrebleu>=2.3.1
-nltk>=3.8
-datasets>=2.14.0
+sacrebleu>=2.5.1
+nltk>=3.9.1
+datasets>=3.6.0
 
 # Additional testing dependencies
-pytest-cov>=4.1.0
+pytest-cov>=6.2.1
 
+# Vector similarity search
 faiss-cpu>=1.11.0
+
+# Data analysis and visualization
+pandas>=2.3.1
+matplotlib>=3.10.3
+
+# Web UI framework
+streamlit>=1.46.1
+
+# COMET evaluation model for translation quality
+comet-ml>=3.49.11
+
+# COMET model for neural translation evaluation
+# Note: This requires PyTorch. Install with: pip install comet-ml[model]
+unbabel-comet>=2.2.2
